@@ -5,8 +5,9 @@
         <group>
             <file>file:/C:/Users/Na/OneDrive/Documents/NetBeansProjects/socketGestionStudent/src/client/ClientFrame.java</file>
             <file>file:/C:/Users/Na/OneDrive/Documents/NetBeansProjects/socketGestionStudent/src/network/ClientSocket.java</file>
-            <file>file:/C:/Users/Na/OneDrive/Documents/NetBeansProjects/socketGestionStudent/src/network/XMLManager.java</file>
             <file>file:/C:/Users/Na/OneDrive/Documents/NetBeansProjects/socketGestionStudent/pending_student.xml</file>
+            <file>file:/C:/Users/Na/OneDrive/Documents/NetBeansProjects/socketGestionStudent/src/client/ClientMain.java</file>
+            <file>file:/C:/Users/Na/OneDrive/Documents/NetBeansProjects/socketGestionStudent/src/client/NetworkChecker.java</file>
         </group>
     </open-files>
 </project-private>

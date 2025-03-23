@@ -1,9 +1,6 @@
 package network;
 
-import java.awt.Color;
-import client.NetworkChecker;
 import java.io.File;
-import javax.swing.*;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
@@ -27,38 +24,16 @@ import org.xml.sax.SAXException;
 public class ClientSocket {
     private final String host;
     private final int port;
-    private final JLabel lblConnexion;
     private Socket socket;
     private ObjectOutputStream outputStream;
 
     // Paramètres de la base de données PostgreSQL pour la vérification de la connexion
 
 
-    public ClientSocket(String host, int port, JLabel lblConnexion) {
+    public ClientSocket(String host, int port) {
         this.host = host;
         this.port = port;
-        this.lblConnexion = lblConnexion;
-        verifierConnexion();
     }
-
-    private void verifierConnexion() {
-    // Vérification de la connexion au serveur via le socket
-    if (NetworkChecker.isNetworkAvailable(host, port)) {
-        try {
-            socket = new Socket(host, port);
-            outputStream = new ObjectOutputStream(socket.getOutputStream());
-            lblConnexion.setText("Statut : Connecté au serveur");
-            lblConnexion.setForeground(Color.GREEN);
-        } catch (IOException e) {
-            lblConnexion.setText("Statut : Hors ligne");
-            lblConnexion.setForeground(Color.RED);
-            socket = null;
-        }
-    } else {
-        lblConnexion.setText("Statut : Hors ligne (Serveur)");
-        lblConnexion.setForeground(Color.RED);
-    }
-}
 
     public void supprimerElementEnvoye(File file) {
     try {
@@ -107,8 +82,6 @@ public class ClientSocket {
             Path path = file.toPath();
             byte[] fileBytes = Files.readAllBytes(path);
 
-            // Établir la connexion avec le serveur
-            socket = new Socket(host, port);
             outputStream = new ObjectOutputStream(socket.getOutputStream());
 
             // Envoyer une indication sur l'action

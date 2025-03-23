@@ -7,10 +7,15 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import network.XMLManager;
 
 public class ClientFrame extends javax.swing.JFrame {
 
+    private boolean isConnected = false;
+    
     private final JTextField txtNum;
     private final JTextField txtNom;
     private final JTextField txtAdresse;
@@ -28,7 +33,7 @@ public class ClientFrame extends javax.swing.JFrame {
     
     
     // Creates new form ClientFrame
-    public ClientFrame() {
+    public ClientFrame() throws IOException {
         setTitle("Client Étudiant");
         setSize(600, 400);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -72,60 +77,48 @@ public class ClientFrame extends javax.swing.JFrame {
         lblConnexion = new JLabel("Statut : Hors ligne");
         lblConnexion.setForeground(Color.RED);
         panelStatus.add(lblConnexion);
-        clientSocket = new ClientSocket(host, port, lblConnexion); // Assurez-vous que lblConnexion est correctement défini
+        clientSocket = new ClientSocket(host, port); // Assurez-vous que lblConnexion est correctement défini
 
         add(panelForm, BorderLayout.NORTH);
         add(scrollPane, BorderLayout.CENTER);
         add(panelStatus, BorderLayout.SOUTH);
 
         // Initialisation du ClientSocket avec connexion au serveur
-        NetworkChecker.startConnectionChecker(host, port, lblConnexion, clientSocket);
+        NetworkChecker.monitorServerStatus("127.0.0.1", 12345, lblConnexion); // Utilisation avec IP et port
 
         btnEnvoyer.addActionListener((ActionEvent e) -> {
             envoyerDonnees();
         });
         setVisible(true);
+
     }
 
-private void envoyerDonnees() {
-    // Récupérer les données du formulaire
-    File file = new File("pending_student.xml");
-    String num = txtNum.getText();
-    String nom = txtNom.getText();
-    String adresse = txtAdresse.getText();
-    double bourse = Double.parseDouble(txtBourse.getText());
+    private void envoyerDonnees() {
+      // Récupérer les données du formulaire
+      File file = new File("pending_student.xml");
+      String num = txtNum.getText();
+      String nom = txtNom.getText();
+      String adresse = txtAdresse.getText();
+      double bourse = Double.parseDouble(txtBourse.getText());
 
-    // Créer un nouvel objet Etudiant avec les données
-    Etudiant etudiant = new Etudiant(num, nom, adresse, bourse);
+      // Créer un nouvel objet Etudiant avec les données
+      Etudiant etudiant = new Etudiant(num, nom, adresse, bourse);
 
-    // Sauvegarder l'étudiant dans le fichier XML
-    XMLManager.sauvegarderEtudiant(etudiant);
+      // Sauvegarder l'étudiant dans le fichier XML
+      XMLManager.sauvegarderEtudiant(etudiant);
+      if (NetworkChecker.checkServerStatus(host, port)){
+        XMLManager.supprimerElementEnvoye(file);
+      }
+      else {
+       JOptionPane.showMessageDialog(null, "La connexion au serveur est indisponible : la requête seras éxécuté quand elle sera rétablie ", 
+         "Information", JOptionPane.WARNING_MESSAGE);
+      }
 
-    // Vérifier la connexion avant d'envoyer
-    if (NetworkChecker.isNetworkAvailable(host, port)) {
-        if (clientSocket != null) {
-            clientSocket.envoyerFichierXML("ajout");
-            clientSocket.supprimerElementEnvoye(file);
-            JOptionPane.showMessageDialog(null, 
-            "Données envoyées au serveur avec succès", 
-            "Ajout éfféctué", 
-            JOptionPane.INFORMATION_MESSAGE);  
-            
-        } else {
-            System.out.println("Erreur : ClientSocket n'est pas initialisé.");
-        }
-    } else {
-        JOptionPane.showMessageDialog(null, 
-        "Connexion indisponible : l'envoi sera effectué une fois la connexion rétablie.", 
-        "Erreur de connexion", 
-        JOptionPane.WARNING_MESSAGE);    
-    }
-
-    // Ajouter l'étudiant à la table pour l'affichage
-    model.addRow(new Object[]{num, nom, adresse, bourse});
-}
-
-
+      // Ajouter l'étudiant à la table pour l'affichage
+      model.addRow(new Object[]{num, nom, adresse, bourse});
+  }
+   
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -176,7 +169,11 @@ private void envoyerDonnees() {
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(() -> {
-            new ClientFrame().setVisible(true);
+            try {
+                new ClientFrame().setVisible(true);
+            } catch (IOException ex) {
+                Logger.getLogger(ClientFrame.class.getName()).log(Level.SEVERE, null, ex);
+            }
         });
     }
 

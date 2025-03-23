@@ -153,5 +153,41 @@ public class XMLManager {
         return false;
     }
 }
+    
+    public static void supprimerElementEnvoye(File file) {
+        try {
+            // Charger le fichier XML existant
+            DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+            Document document = dBuilder.parse(file);
+            Element rootElement = document.getDocumentElement();
+
+            // Supprimer les éléments envoyés
+            NodeList etudiants = rootElement.getElementsByTagName("Etudiant");
+            for (int i = 0; i < etudiants.getLength(); i++) {
+                Element etudiantElement = (Element) etudiants.item(i);
+                // Ajouter ici une condition pour vérifier si cet étudiant a bien été envoyé au serveur
+                // Par exemple, si tu as une manière de savoir quel étudiant a été envoyé
+                // (par exemple, via un attribut "envoye" ou en utilisant une base de données côté serveur)
+                boolean envoyé = true;  // Remplace cette condition par un test réel
+                if (envoyé) {
+                    rootElement.removeChild(etudiantElement);
+                }
+            }
+
+            // Écrire à nouveau le fichier XML sans les éléments envoyés
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            Transformer transformer = transformerFactory.newTransformer();
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            DOMSource source = new DOMSource(document);
+            StreamResult result = new StreamResult(file);
+            transformer.transform(source, result);
+
+            System.out.println("Éléments envoyés supprimés du fichier XML.");
+
+        } catch (IOException | IllegalArgumentException | ParserConfigurationException | TransformerException | DOMException | SAXException e) {
+        }
+    }
+
 
 }
