@@ -1,0 +1,1 @@
+So after further time configuring the client app, I just decided to use nmap to continously check the Server disponibility  with an intervall of 2000 ms, instead of directly connecting via socket each time.
