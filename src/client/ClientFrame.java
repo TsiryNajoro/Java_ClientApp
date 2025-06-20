@@ -17,6 +17,11 @@ import network.XMLManager;
 import java.util.List;
 import javax.swing.table.TableRowSorter;
 import javax.swing.text.PlainDocument;
+import com.formdev.flatlaf.FlatLightLaf;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.border.TitledBorder;
+
 
 
 public class ClientFrame extends javax.swing.JFrame {
@@ -33,7 +38,6 @@ public class ClientFrame extends javax.swing.JFrame {
     private final JTable table;
     private final JLabel lblConnexion, lblImage;
     private final DefaultTableModel model;
-    private final ClientSocket clientSocket;
     
     private final String host = "localhost";
     private final Integer port = 12345;
@@ -47,12 +51,30 @@ public class ClientFrame extends javax.swing.JFrame {
         setLocationRelativeTo(null);
         setLayout(new BorderLayout(15, 15));
         
+        try {
+            UIManager.setLookAndFeel(new FlatLightLaf());
+        } catch (UnsupportedLookAndFeelException ex) {
+            System.err.println("Erreur lors du chargement du thème FlatLaf");
+        }
 
+        
         // Panel Formulaire
         JPanel panelForm = new JPanel();
-        panelForm.setBorder(BorderFactory.createTitledBorder("Saisie Étudiant"));
-        panelForm.setBackground(new Color(240, 240, 240));
-        Font formFont = new Font("Segoe UI", Font.PLAIN, 18);
+        panelForm.setBackground(Color.WHITE);
+        panelForm.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createEmptyBorder(15, 20, 15, 20), // marge intérieure (top, left, bottom, right)
+            BorderFactory.createTitledBorder(
+                BorderFactory.createLineBorder(new Color(33, 150, 243), 1),
+                "Saisie Étudiant",
+                TitledBorder.LEFT,
+                TitledBorder.TOP,
+                new Font("Segoe UI", Font.BOLD, 18),
+                new Color(33, 150, 243)
+            )
+        ));
+
+
+        Font formFont = new Font("Segoe UI", Font.PLAIN, 15); // plus léger
         
         // Image de l'étudiant
         lblImage = new JLabel();
@@ -68,7 +90,8 @@ public class ClientFrame extends javax.swing.JFrame {
 
         for (JTextField field : new JTextField[]{txtNum, txtNom, txtAdresse, txtBourse}) {
             field.setFont(formFont);
-            field.setMargin(new Insets(5, 10, 5, 10));
+            field.setPreferredSize(new Dimension(250, 28)); // taille fixe raisonnable
+            field.setMargin(new Insets(4, 8, 4, 8)); // moins de padding
         }
         
         JLabel lblNum = new JLabel("Numéro Étudiant:");
@@ -109,6 +132,7 @@ public class ClientFrame extends javax.swing.JFrame {
         // Modifier la largeur des TextField pour les rendre plus petites
         layout.setHorizontalGroup(
             layout.createSequentialGroup()
+                .addGap(10) // marge gauche
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
@@ -116,42 +140,52 @@ public class ClientFrame extends javax.swing.JFrame {
                             .addComponent(lblNom)
                             .addComponent(lblAdresse)
                             .addComponent(lblBourse))
+                        .addGap(10)
                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                            .addComponent(txtNum, 175, 250, 400)
-                            .addComponent(txtNom, 175, 250, 400)
-                            .addComponent(txtAdresse, 175, 250, 400)
-                            .addComponent(txtBourse, 175, 250, 400)
+                            .addComponent(txtNum)
+                            .addComponent(txtNom)
+                            .addComponent(txtAdresse)
+                            .addComponent(txtBourse)
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(btnEnvoyer , buttonWidth, buttonWidth, buttonWidth)
+                                .addComponent(btnEnvoyer)
                                 .addGap(10)
-                                .addComponent(btnModifier, buttonWidth, buttonWidth, buttonWidth)
+                                .addComponent(btnModifier)
                                 .addGap(10)
-                                .addComponent(btnSupprimer , buttonWidth, buttonWidth, buttonWidth)))))
-                .addGap(30) // espace entre formulaire et image
+                                .addComponent(btnSupprimer)))))
+                .addGap(20)
                 .addComponent(lblImage)
+                .addGap(10) // marge droite
         );
 
         layout.setVerticalGroup(
             layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                 .addGroup(layout.createSequentialGroup()
+                    .addGap(10)
                     .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                         .addComponent(lblNum)
                         .addComponent(txtNum))
+                    .addGap(10)
                     .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                         .addComponent(lblNom)
                         .addComponent(txtNom))
+                    .addGap(10)
                     .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                         .addComponent(lblAdresse)
                         .addComponent(txtAdresse))
+                    .addGap(10)
                     .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                         .addComponent(lblBourse)
                         .addComponent(txtBourse))
+                    .addGap(15)
                     .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                         .addComponent(btnEnvoyer)
                         .addComponent(btnModifier)
                         .addComponent(btnSupprimer)))
-                .addComponent(lblImage) // aligne en haut
+                .addGroup(layout.createSequentialGroup()
+                    .addGap(10)
+                    .addComponent(lblImage))
         );
+
         
         // Tableau
         model = new DefaultTableModel(new String[]{"Numéro", "Nom", "Adresse", "Bourse"}, 0);
@@ -185,13 +219,17 @@ public class ClientFrame extends javax.swing.JFrame {
         lblConnexion.setForeground(Color.RED);
         lblConnexion.setFont(new Font("Segoe UI", Font.PLAIN, 16));
         panelStatus.add(lblConnexion);
-        panelStatus.setBackground(new Color(240, 240, 240));
-        
-        clientSocket = new ClientSocket(host, port); // Assurez-vous que lblConnexion est correctement défini
+        panelStatus.setBackground(Color.WHITE);
+        panelStatus.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(220, 220, 220)));
+        // Assurez-vous que lblConnexion est correctement défini
 
-        add(panelForm, BorderLayout.NORTH);
-        add(scrollPane, BorderLayout.CENTER);
-        add(panelStatus, BorderLayout.SOUTH);
+        JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(15, 20, 15, 20));
+        mainPanel.add(panelForm, BorderLayout.NORTH);
+        mainPanel.add(scrollPane, BorderLayout.CENTER);
+        mainPanel.add(panelStatus, BorderLayout.SOUTH);
+        add(mainPanel);
+
         
      // Quand l'utilisateur sélectionne une ligne du tableau
         table.getSelectionModel().addListSelectionListener(e -> {
