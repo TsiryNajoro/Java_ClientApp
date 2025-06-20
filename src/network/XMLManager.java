@@ -24,6 +24,69 @@ import org.xml.sax.SAXException;
  */
 public class XMLManager {
     private static final String FILE_PATH = "pending_student.xml";
+    
+        public static void sauvegarderEtudiantHorsLigne(Etudiant etudiant) {
+        try {
+            File file = new File(FILE_PATH);
+            Document document;
+            Element rootElement;
+
+            // Vérifier si le fichier existe
+            if (file.exists()) {
+                DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+                DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+                document = dBuilder.parse(file);
+                rootElement = document.getDocumentElement();
+            } else {
+                // Création d’un nouveau document XML
+                DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+                DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+                document = dBuilder.newDocument();
+                rootElement = document.createElement("Etudiants");
+                document.appendChild(rootElement);
+            }
+
+            // Créer un élément "Etudiant"
+            Element etudiantElement = document.createElement("Etudiant");
+
+            // Ajouter l'action (Ajout, Modification, Suppression)
+            Element action = document.createElement("Action");
+            action.appendChild(document.createTextNode(etudiant.getAction()));
+            etudiantElement.appendChild(action);
+
+            Element num = document.createElement("Numero");
+            num.appendChild(document.createTextNode(etudiant.getNumero()));
+            etudiantElement.appendChild(num);
+
+            Element nom = document.createElement("Nom");
+            nom.appendChild(document.createTextNode(etudiant.getNom()));
+            etudiantElement.appendChild(nom);
+
+            Element adresse = document.createElement("Adresse");
+            adresse.appendChild(document.createTextNode(etudiant.getAdresse()));
+            etudiantElement.appendChild(adresse);
+
+            Element bourse = document.createElement("Bourse");
+            bourse.appendChild(document.createTextNode(String.valueOf(etudiant.getBourse())));
+            etudiantElement.appendChild(bourse);
+
+            // Ajouter à la racine
+            rootElement.appendChild(etudiantElement);
+
+            // Écrire le fichier
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            Transformer transformer = transformerFactory.newTransformer();
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            DOMSource source = new DOMSource(document);
+            StreamResult result = new StreamResult(file);
+            transformer.transform(source, result);
+
+            System.out.println("Etudiant sauvegardé localement avec action : " + etudiant.getAction());
+
+        } catch (IOException | IllegalArgumentException | ParserConfigurationException | TransformerException | DOMException | SAXException e) {
+            e.printStackTrace();
+        }
+    }
 
     public static void sauvegarderEtudiant(Etudiant etudiant) {
         try {
@@ -90,41 +153,6 @@ public class XMLManager {
         }
     }
 
-    public static List<Etudiant> lireEtudiantsDepuisXML() {
-    List<Etudiant> etudiants = new ArrayList<>();
-    File file = new File(FILE_PATH);
-
-    if (!file.exists()) {
-        return etudiants; // Retourne une liste vide si aucun fichier
-    }
-
-    try {
-        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-        Document document = dBuilder.parse(file);
-        document.getDocumentElement().normalize();
-
-        NodeList nodeList = document.getElementsByTagName("Etudiant");
-
-        for (int i = 0; i < nodeList.getLength(); i++) {
-            Node node = nodeList.item(i);
-            if (node.getNodeType() == Node.ELEMENT_NODE) {
-                Element element = (Element) node;
-
-                String numero = element.getElementsByTagName("Numero").item(0).getTextContent();
-                String nom = element.getElementsByTagName("Nom").item(0).getTextContent();
-                String adresse = element.getElementsByTagName("Adresse").item(0).getTextContent();
-                double bourse = Double.parseDouble(element.getElementsByTagName("Bourse").item(0).getTextContent());
-
-                etudiants.add(new Etudiant(numero, nom, adresse, bourse));
-            }
-        }
-    } catch (IOException | NumberFormatException | ParserConfigurationException | DOMException | SAXException e) {
-    }
-
-    return etudiants;
-}
-
     public static void supprimerFichierXML() {
         File file = new File(FILE_PATH);
         if (file.exists()) {
@@ -189,5 +217,47 @@ public class XMLManager {
         }
     }
 
-
+ // Méthode pour extraire les étudiants et leur action depuis le fichier XML
+    public static List<Etudiant> extractEtudiantsAvecAction(File xmlFile) {
+        List<Etudiant> etudiantsList = new ArrayList<>();
+        
+        try {
+            // Créer un DocumentBuilder pour analyser le XML
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            Document document = builder.parse(xmlFile);
+            NodeList etudiantsNodes = document.getElementsByTagName("Etudiant");
+            
+            // Parcours des étudiants dans le XML
+            for (int i = 0; i < etudiantsNodes.getLength(); i++) {
+                Node etudiantNode = etudiantsNodes.item(i);
+                if (etudiantNode.getNodeType() == Node.ELEMENT_NODE) {
+                    Element etudiantElement = (Element) etudiantNode;
+                    
+                    // Extraire les informations de chaque étudiant
+                    String numero = etudiantElement.getElementsByTagName("Numero").item(0).getTextContent();
+                    String nom = etudiantElement.getElementsByTagName("Nom").item(0).getTextContent();
+                    String adresse = etudiantElement.getElementsByTagName("Adresse").item(0).getTextContent();
+                    double bourse = Double.parseDouble(etudiantElement.getElementsByTagName("Bourse").item(0).getTextContent());
+                    
+                    // Extraire l'action (Ajout, Modification, Suppression)
+                    String action = etudiantElement.getElementsByTagName("Action").item(0).getTextContent();
+                    
+                    // Créer un objet Etudiant
+                    Etudiant etudiant = new Etudiant(numero, nom, adresse, bourse, action);
+                    
+                    // Ici, tu peux garder l'action séparée ou l'envoyer avec l'objet Etudiant
+                    // Pour l'instant, on ajoute l'étudiant à la liste
+                    etudiantsList.add(etudiant);
+                    
+                    // Si tu veux aussi garder l'action séparée, tu peux créer un objet avec Action et Etudiant
+                    // ou simplement inclure l'action dans l'objet Etudiant, selon le besoin
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        return etudiantsList;
+    }
 }

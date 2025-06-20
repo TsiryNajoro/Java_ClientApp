@@ -10,7 +10,7 @@ public class ClientMain {
         // Lancer le ClientFrame ici
         SwingUtilities.invokeLater(() -> {
             try {
-                new ClientFrame().setVisible(true); // Assurez-vous que ClientFrame est bien défini
+                new ClientFrame().setVisible(true); 
             } catch (IOException ex) {
                 Logger.getLogger(ClientMain.class.getName()).log(Level.SEVERE, null, ex);
             }
